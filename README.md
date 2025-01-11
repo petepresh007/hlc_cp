@@ -23,7 +23,7 @@ This is a cooperative website application built with Node.js, Express, and Mongo
 
 1. Clone the repository:
     ```sh
-    git clone https://github.com/yourusername/cooperative-website.git
+    git clone https://github.com/petepresh007/hlc_cp.git.git
     cd cooperative-website
     ```
 
@@ -49,6 +49,7 @@ This is a cooperative website application built with Node.js, Express, and Mongo
 The application provides a set of RESTful API endpoints for user and admin management.
 
 ## API Endpoints
+- **URL:** `https://hlc-cp.onrender.com`
 
 ### User Registration
 

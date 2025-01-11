@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Endpoints</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        h1 {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>API Endpoints</h1>
+    <h3>Base Url: <a href="https://hlc-cp.onrender.com">link</a></h3>
+    <h3>README.md: <a href="https://github.com/petepresh007/hlc_cp">git</a></h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Endpoint</th>
+                <th>Method</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>/api/user/reg-ad</td>
+                <td>POST</td>
+                <td>Register a new user</td>
+            </tr>
+            <tr>
+                <td>/api/user/login</td>
+                <td>POST</td>
+                <td>Login a user</td>
+            </tr>
+            <tr>
+                <td>/api/user/persist</td>
+                <td>GET</td>
+                <td>Persist user login</td>
+            </tr>
+            <tr>
+                <td>/api/user/logout</td>
+                <td>POST</td>
+                <td>Logout a user</td>
+            </tr>
+            <tr>
+                <td>/api/user/create</td>
+                <td>POST</td>
+                <td>Create a new user by admin</td>
+            </tr>
+            <tr>
+                <td>/api/user/persist-admin</td>
+                <td>GET</td>
+                <td>Persist admin login</td>
+            </tr>
+            <tr>
+                <td>/api/user/logout-admin</td>
+                <td>POST</td>
+                <td>Logout an admin</td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

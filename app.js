@@ -13,6 +13,7 @@ const path = require("path");
 app.use(express.json());
 app.use(cookieParser());
 app.use("/upload", express.static(path.join(__dirname, "upload")));
+app.use("/", express.static(path.join(__dirname, "public")));
 app.use(
   cors({
     origin: "",
@@ -22,7 +23,7 @@ app.use(
 
 app.use("/api/user", require("./routes/user"));
 
-app.get("/", (req, res) => {
+app.get("/welcome", (req, res) => {
   res.status(200).json({ msg: "Welcome to the cooperative" });
 });
 
