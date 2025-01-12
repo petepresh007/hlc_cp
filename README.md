@@ -128,7 +128,8 @@ The application provides a set of RESTful API endpoints for user and admin manag
       "username": "string",
       "email": "string",
       "password": "string",
-      "role": "string"
+      "role": "string",
+      "file":"string" 
     }
     ```
 - **Response:**
@@ -148,7 +149,8 @@ The application provides a set of RESTful API endpoints for user and admin manag
     {
       "username": "string",
       "email": "string",
-      "password": "string"
+      "password": "string",
+      "file":"string"
     }
     ```
 - **Response:**
@@ -179,6 +181,26 @@ The application provides a set of RESTful API endpoints for user and admin manag
     ```json
     {
       "msg": "user logged out successfully..."
+    }
+    ```
+
+### edit user
+
+- **URL:** `/api/user/edit/:userId`
+- **Method:** `PUT`
+- **Description:** edit user account.
+- **Request Body:**
+    ```json
+    {
+      "username": "string",
+      "email": "string",
+      "file":"string"
+    }
+    ```
+- **Response:**
+    ```json
+    {
+      "msg": "user account modified successfully..."
     }
     ```
 
