@@ -31,6 +31,7 @@
     <h1>API Endpoints</h1>
     <h3>Base Url: <a href="https://hlc-cp.onrender.com">link</a></h3>
     <h3>README.md: <a href="https://github.com/petepresh007/hlc_cp">git</a></h3>
+    <p><strong>NB</strong>, all admin activities are protected</p>
     <table>
         <thead>
             <tr>
@@ -74,6 +75,22 @@
                 <td>/api/user/logout-admin</td>
                 <td>POST</td>
                 <td>Logout an admin</td>
+            </tr>
+            <tr>
+                <td>/api/user/all</td>
+                <td>GET</td>
+                <td>get all user by admin by admin</td>
+            </tr>
+            <tr>
+                <td>/api/user/del/:userId</td>
+                <td>DELETE</td>
+                <td>delete user by admin</td>
+            </tr>
+
+            <tr>
+                <td>/api/user/edit/:userId</td>
+                <td>PUT</td>
+                <td>edit user in(name, email, image) by admin</td>
             </tr>
         </tbody>
     </table>

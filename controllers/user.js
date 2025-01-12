@@ -7,6 +7,9 @@ const {
 } = require("../errors");
 const bcrypt = require("bcrypt");
 const JWT = require("jsonwebtoken");
+const { deleteFile } = require("../utils/deletefile");
+const path = require("path");
+const fs = require("fs");
 
 // Register user
 const RegisterUser = async (req, res, next) => {
@@ -19,8 +22,12 @@ const RegisterUser = async (req, res, next) => {
 
     //check if user exists already
     const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      throw new ConflictError("A user with the email exists already...");
+
+    const existingUserUserName = await User.findOne({ username });
+    if (existingUser || existingUserUserName) {
+      throw new ConflictError(
+        "A user with the email or username exists already..."
+      );
     }
 
     const allowedRoles = ["admin", "user"];
@@ -29,7 +36,7 @@ const RegisterUser = async (req, res, next) => {
     }
 
     const harshedPassword = await bcrypt.hash(password, 10);
-    const file = req.file ? req.file.name : null;
+    const file = req.file ? req.file.filename : null;
 
     const newUser = new User({
       username,
@@ -156,12 +163,16 @@ const createUser = async (req, res, next) => {
 
     //check if user exists already
     const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      throw new ConflictError("A user with the email exists already...");
+
+    const existingUserUsername = await User.findOne({ username });
+    if (existingUser || existingUserUsername) {
+      throw new ConflictError(
+        "A user with the email or username exists already..."
+      );
     }
 
     const harshedPassword = await bcrypt.hash(password, 10);
-    const file = req.file ? req.file.name : null;
+    const file = req.file ? req.file.filename : null;
 
     const newUser = new User({
       username,
@@ -198,6 +209,94 @@ const logoutAdmin = (_, res) => {
   res.status(200).json({ msg: "user logged out successfully..." });
 };
 
+//get available users
+const getAllUser = async (req, res, next) => {
+  try {
+    const user = await User.find({ role: "user" }).sort({ createdAt: -1 });
+    res.status(200).json(user);
+  } catch (error) {
+    next(error);
+  }
+};
+
+//admin delete user account
+const deleteUserAccount = async (req, res, next) => {
+  try {
+    const admin = await User.findById(req.admin._id);
+    if (!admin) {
+      throw new NotFoundError("No admin was found with the provided id");
+    }
+
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      throw new NotFoundError("No user was found with the provided id");
+    }
+
+    const del = await User.findOneAndDelete({ _id: req.params.id });
+    if (del) {
+      const filepath = path.join(__dirname, "..", "upload", user.file);
+      deleteFile(filepath);
+    }
+    res.status(200).json({ msg: "user deleted successfully..." });
+  } catch (error) {
+    next(error);
+  }
+};
+
+//admin modify users account
+const editUserAccount = async (req, res, next) => {
+  try {
+    const { username, email, password } = req.body;
+
+    if (!username && !email && !password && !req.file) {
+      throw new BadrequestError("Please enter a field to update...");
+    }
+
+    //check if user exists already
+    const existingUser = await User.findOne({ email });
+
+    const existingUserUsername = await User.findOne({ username });
+    if (existingUser || existingUserUsername) {
+      throw new ConflictError(
+        "A user with the email or username exists already..."
+      );
+    }
+
+    const admin = await User.findById(req.admin._id);
+    if (!admin) {
+      throw new NotFoundError("no admin was found with the provided id");
+    }
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      throw new NotFoundError("no user was found with the provided id");
+    }
+
+    const updateValue = await User.findOneAndUpdate(
+      { _id: req.params.id },
+      {
+        username: username ? username : user.username,
+        email: email ? email : user.email,
+        file: req.file ? req.file.filename : user.file,
+      }
+    );
+
+    if (req.file) {
+      const filepath = path.join(__dirname, "..", "upload", user.file);
+      deleteFile(filepath);
+    }
+
+    res
+      .status(200)
+      .json({ updateValue, msg: "account updated successfully..." });
+  } catch (error) {
+    if (req.file) {
+      fs.unlinkSync(req.file.path);
+    }
+    next(error);
+  }
+};
+
 module.exports = {
   logout,
   createUser,
@@ -206,4 +305,9 @@ module.exports = {
   persistUser,
   persistAdmin,
   logoutAdmin,
+  deleteUserAccount,
+  editUserAccount,
+  getAllUser,
+  deleteUserAccount,
+  editUserAccount,
 };

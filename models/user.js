@@ -18,7 +18,11 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    file: String
-})
+    file: String,
+    finance: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Finance'
+    }]
+}, {timestamps: true});
 
 module.exports = mongoose.model('User', UserSchema)
