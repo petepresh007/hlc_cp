@@ -29,4 +29,5 @@ router.get('/user-single/:id', getSingleUser)
 router.delete("/del/:id", adminProtect, deleteUserAccount);
 router.put("/edit/:id", upload.single("file"), adminProtect, editUserAccount);
 
+
 module.exports = router;
