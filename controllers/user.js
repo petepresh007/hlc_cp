@@ -212,7 +212,9 @@ const logoutAdmin = (_, res) => {
 //get available users
 const getAllUser = async (req, res, next) => {
   try {
-    const user = await User.find({ role: "user" }).sort({ createdAt: -1 });
+    const user = await User.find({ role: "user" })
+      .sort({ createdAt: -1 })
+      .populate("finance");
     res.status(200).json(user);
   } catch (error) {
     next(error);
@@ -297,6 +299,23 @@ const editUserAccount = async (req, res, next) => {
   }
 };
 
+//get single  user
+const getSingleUser = async (req, res, next) => {
+  try {
+    const admin = await User.findById(req.admin._id);
+    if (!admin) {
+      throw new NotFoundError("No admin was found with the provided id");
+    }
+    const data = await User.findOne({
+      _id: req.params.id,
+      role: "user",
+    }).populate("finance");
+    res.status(200).json(data);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   logout,
   createUser,
@@ -310,4 +329,5 @@ module.exports = {
   getAllUser,
   deleteUserAccount,
   editUserAccount,
+  getSingleUser
 };
