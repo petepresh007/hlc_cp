@@ -9,6 +9,11 @@ const { connectDB, closeDB } = require("./utils/db");
 const { NotFoundPage } = require("./utils/notFoundPage");
 const errorHandler = require("./middleware/errorhandler");
 const path = require("path");
+// const swaggerUi = require('swagger-ui-express');
+
+// const swaggerDocument= require('./swagger.json');
+
+// app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
 
 app.use(express.json());
 app.use(cookieParser());
@@ -22,6 +27,7 @@ app.use(
 );
 
 app.use("/api/user", require("./routes/user"));
+app.use('/api/finance', require("./routes/finance"));
 
 app.get("/welcome", (req, res) => {
   res.status(200).json({ msg: "Welcome to the cooperative" });

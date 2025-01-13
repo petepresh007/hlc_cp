@@ -11,6 +11,7 @@ const {
   getAllUser,
   deleteUserAccount,
   editUserAccount,
+  getSingleUser
 } = require("../controllers/user");
 const { userProtect, adminProtect } = require("../middleware/auth");
 const { upload } = require("../multer");
@@ -24,6 +25,7 @@ router.post("/logout-admin", logoutAdmin);
 router.get("/persist-admin", persistAdmin);
 
 router.get("/all", adminProtect, getAllUser);
+router.get('/user-single/:id', adminProtect, getSingleUser)
 router.delete("/del/:id", adminProtect, deleteUserAccount);
 router.put("/edit/:id", upload.single("file"), adminProtect, editUserAccount);
 
