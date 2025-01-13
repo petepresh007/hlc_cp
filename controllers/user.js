@@ -302,10 +302,6 @@ const editUserAccount = async (req, res, next) => {
 //get single  user
 const getSingleUser = async (req, res, next) => {
   try {
-    const admin = await User.findById(req.admin._id);
-    if (!admin) {
-      throw new NotFoundError("No admin was found with the provided id");
-    }
     const data = await User.findOne({
       _id: req.params.id,
       role: "user",
