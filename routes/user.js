@@ -25,7 +25,7 @@ router.post("/logout-admin", logoutAdmin);
 router.get("/persist-admin", persistAdmin);
 
 router.get("/all", adminProtect, getAllUser);
-router.get('/user-single/:id', adminProtect, getSingleUser)
+router.get('/user-single/:id', getSingleUser)
 router.delete("/del/:id", adminProtect, deleteUserAccount);
 router.put("/edit/:id", upload.single("file"), adminProtect, editUserAccount);
 
