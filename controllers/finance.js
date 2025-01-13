@@ -18,17 +18,6 @@ const createFinance = async (req, res, next) => {
       septemberPurchaseDeduction,
       member_id,
     } = req.body;
-    // if (
-    //   !totaloanBalance ||
-    //   !totalSavingsBalance ||
-    //   !monthlySavingsDeduction ||
-    //   !monthlyLoanDeduction ||
-    //   !decemberPurchaseDeduction ||
-    //   !septemberPurchaseDeduction ||
-    //   !member_id
-    // ) {
-    //   throw new BadrequestError("all fields are required...");
-    // }
 
     const existingFinance = await Finance.findOne({ totalSavingsBalance });
     if (existingFinance) {
@@ -137,13 +126,35 @@ const editFinance = async (req, res, next) => {
             : finance.septemberPurchaseDeduction),
       }
     );
-    res.status(200).json(updateFinance, { new: true });
+    res.status(200).json(updateFinance);
   } catch (error) {
     next(error);
   }
 };
 
+//delete finance
+const deleteFinance = async (req, res, next) => {
+  try {
+    const admin = await User.findById(req.admin._id);
+    if(!admin){
+      throw new BadrequestError('No admin was found with the provided id')
+    }
+    const finance = await Finance.findById(req.params.id);
+    if(!finance){
+      throw new NotFoundError('No finance was found with the provided id');
+    }
+    const del = await Finance.findOneAndDelete({_id: req.params.id});
+    if(!del){
+      throw new NotFoundError('No data was found with the provided id');
+    }
+    res.status(200).json({msg: 'finance deleted successfully...'})
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   createFinance,
   editFinance,
+  deleteFinance
 };
