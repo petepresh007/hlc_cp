@@ -9,11 +9,10 @@ const { connectDB, closeDB } = require("./utils/db");
 const { NotFoundPage } = require("./utils/notFoundPage");
 const errorHandler = require("./middleware/errorhandler");
 const path = require("path");
-// const swaggerUi = require('swagger-ui-express');
+const { swaggerUi, swaggerSpec } = require('./swaggerConfig');
 
-// const swaggerDocument= require('./swagger.json');
-
-// app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
+// Route for Swagger UI
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use(express.json());
 app.use(cookieParser());
@@ -32,6 +31,34 @@ app.use('/api/finance', require("./routes/finance"));
 app.get("/welcome", (req, res) => {
   res.status(200).json({ msg: "Welcome to the cooperative" });
 });
+
+/**
+ * @swagger
+ * /users:
+ *   get:
+ *     summary: Get all users
+ *     description: Retrieve a list of all registered users.
+ *     responses:
+ *       200:
+ *         description: A list of users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                     example: 1
+ *                   name:
+ *                     type: string
+ *                     example: John Doe
+ */
+app.get('/users', (req, res) => {
+  res.json([{ id: 1, name: 'John Doe' }]);
+});
+
 
 let server;
 

@@ -11,13 +11,17 @@ const {
   getAllUser,
   deleteUserAccount,
   editUserAccount,
-  getSingleUser
+  getSingleUser,
+  createUsersFromExcel
 } = require("../controllers/user");
 const { userProtect, adminProtect } = require("../middleware/auth");
 const { upload } = require("../multer");
 
+
 router.post("/reg-ad", upload.single("file"), RegisterUser);
 router.post("/create", adminProtect, upload.single("file"), createUser);
+router.post('/create-excel', upload.single('file'),adminProtect, createUsersFromExcel)
+
 router.post("/login", LoginUser);
 router.get("/persist", persistUser);
 router.post("/logout", logout);
