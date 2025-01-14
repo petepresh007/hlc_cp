@@ -10,6 +10,7 @@ const JWT = require("jsonwebtoken");
 const { deleteFile } = require("../utils/deletefile");
 const path = require("path");
 const fs = require("fs");
+const XLSX = require("xlsx");
 
 // Register user
 const RegisterUser = async (req, res, next) => {
@@ -189,6 +190,132 @@ const createUser = async (req, res, next) => {
   }
 };
 
+
+//create user using excel
+const createUsersFromExcel = async (req, res, next) => {
+  try {
+    const admin = await User.findById(req.admin._id);
+
+    if (!admin) {
+      throw new NotFoundError("No admin was found with the provided id");
+    }
+
+    if (!req.file) {
+      throw new BadrequestError("Please upload an Excel file...");
+    }
+
+    // Read the uploaded Excel file
+    const workbook = XLSX.readFile(req.file.path);
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const users = XLSX.utils.sheet_to_json(sheet);
+
+    const results = [];
+
+    for (const user of users) {
+      const { username, email, password } = user;
+      console.log(username, email, password);
+
+      if (!username || !password || !email) {
+        results.push({ username, email, status: "failed", reason: "Missing fields" });
+        continue;
+      }
+
+      // Check if user already exists
+      const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+      if (existingUser) {
+        results.push({ username, email, status: "failed", reason: "User already exists" });
+        continue;
+      }
+
+      // Hash the password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Create the new user
+      const newUser = new User({
+        username,
+        email,
+        password: hashedPassword,
+        role: "user",
+      });
+
+      await newUser.save();
+      results.push({ username, email, status: "success" });
+    }
+
+    res.status(200).json({ msg: "Bulk user creation completed", results });
+    fs.unlinkSync(req.file.path);
+  } catch (error) {
+    if(req.file){
+      fs.unlinkSync(req.file.path);
+    }
+    next(error);
+  }
+};
+
+
+// const createUsersFromExcel = async (req, res, next) => {
+//   try {
+//     const admin = await User.findById(req.admin._id);
+//     if (!admin) {
+//       throw new NotFoundError("No admin was found with the provided id");
+//     }
+
+//     if (!req.file) {
+//       throw new BadrequestError("Please upload an Excel file...");
+//     }
+
+//     const workbook = XLSX.readFile(req.file.path);
+//     const sheet = workbook.Sheets[workbook.SheetNames[0]];
+//     const users = XLSX.utils.sheet_to_json(sheet).filter(
+//       (user) => user.username && user.email && user.password
+//     );
+
+//     const results = [];
+
+//     for (const user of users) {
+//       const { username, email, password } = {
+//         username: user.username?.trim(),
+//         email: user.email?.trim(),
+//         password: user.password?.trim(),
+//       };
+
+//       console.log(username, email, password)
+
+//       if (!username || !password || !email) {
+//         results.push({ username, email, status: "failed", reason: "Missing fields" });
+//         continue;
+//       }
+
+//       const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+//       if (existingUser) {
+//         results.push({ username, email, status: "failed", reason: "User already exists" });
+//         continue;
+//       }
+
+//       const hashedPassword = await bcrypt.hash(password, 10);
+
+//       const newUser = new User({
+//         username,
+//         email,
+//         password: hashedPassword,
+//         role: "user",
+//       });
+
+//       await newUser.save();
+//       results.push({ username, email, status: "success" });
+//     }
+
+//     res.status(200).json({ msg: "Bulk user creation completed", results });
+//     fs.unlinkSync(req.file.path);
+//   } catch (error) {
+//     if (req.file) {
+//       fs.unlinkSync(req.file.path);
+//     }
+//     next(error);
+//   }
+// };
+
+
 //logout user
 const logout = (_, res) => {
   res.clearCookie("usertoken", {
@@ -250,6 +377,7 @@ const deleteUserAccount = async (req, res, next) => {
 const editUserAccount = async (req, res, next) => {
   try {
     const { username, email, password } = req.body;
+    
 
     if (!username && !email && !password && !req.file) {
       throw new BadrequestError("Please enter a field to update...");
@@ -304,7 +432,7 @@ const getSingleUser = async (req, res, next) => {
   try {
     const data = await User.findOne({
       _id: req.params.id,
-      role: "user",
+      // role: "user",
     }).populate("finance");
     res.status(200).json(data);
   } catch (error) {
@@ -325,5 +453,6 @@ module.exports = {
   getAllUser,
   deleteUserAccount,
   editUserAccount,
-  getSingleUser
+  getSingleUser,
+  createUsersFromExcel
 };
