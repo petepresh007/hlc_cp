@@ -20,7 +20,11 @@ app.use("/upload", express.static(path.join(__dirname, "upload")));
 app.use("/", express.static(path.join(__dirname, "public")));
 app.use(
   cors({
-    origin: "https://hlc-cp-client.vercel.app/",
+    origin: [
+      "https://hlc-cp-client.vercel.app",
+      "http://localhost:5173",
+      "https://another-allowed-origin.com",
+    ],
     credentials: true,
   })
 );
