@@ -11,7 +11,7 @@ const swaggerDefinition = {
   },
   servers: [
     {
-      url: "http://localhost:5000", // Change this to your server's base URL
+      url: "http://localhost:4000", // Change this to your server's base URL
     },
   ],
 };

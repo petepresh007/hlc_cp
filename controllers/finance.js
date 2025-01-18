@@ -22,16 +22,18 @@ const createFinance = async (req, res, next) => {
     } = req.body;
 
     const existingFinance = await Finance.findOne({ totalSavingsBalance });
-    if (existingFinance) {
-      throw new ConflictError("The users total account balance is not valid");
-    }
+    // if (existingFinance) {
+    //   throw new ConflictError("The users total account balance is not valid");
+    // }
     const user = await User.findById(member_id);
 
     if (!user) {
       throw new NotFoundError("No user was found with the provided id...");
     }
     const newFinance = new Finance({
-      totaloanBalance: Number(totaloanBalance ? totaloanBalance : 0),
+      totaloanBalance: Number(
+        totaloanBalance ? totaloanBalance : 0
+      ),
       totalSavingsBalance: Number(
         totalSavingsBalance ? totalSavingsBalance : 0
       ),
@@ -49,6 +51,7 @@ const createFinance = async (req, res, next) => {
       ),
       totalDeduction:
         monthlyLoanDeduction +
+        monthlySavingsDeduction +
         decemberPurchaseDeduction +
         septemberPurchaseDeduction,
       member_id,
