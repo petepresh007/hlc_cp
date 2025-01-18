@@ -190,7 +190,6 @@ const createUser = async (req, res, next) => {
   }
 };
 
-
 //create user using excel
 const createUsersFromExcel = async (req, res, next) => {
   try {
@@ -216,14 +215,26 @@ const createUsersFromExcel = async (req, res, next) => {
       console.log(username, email, password);
 
       if (!username || !password || !email) {
-        results.push({ username, email, status: "failed", reason: "Missing fields" });
+        results.push({
+          username,
+          email,
+          status: "failed",
+          reason: "Missing fields",
+        });
         continue;
       }
 
       // Check if user already exists
-      const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+      const existingUser = await User.findOne({
+        $or: [{ email }, { username }],
+      });
       if (existingUser) {
-        results.push({ username, email, status: "failed", reason: "User already exists" });
+        results.push({
+          username,
+          email,
+          status: "failed",
+          reason: "User already exists",
+        });
         continue;
       }
 
@@ -245,13 +256,12 @@ const createUsersFromExcel = async (req, res, next) => {
     res.status(200).json({ msg: "Bulk user creation completed", results });
     fs.unlinkSync(req.file.path);
   } catch (error) {
-    if(req.file){
+    if (req.file) {
       fs.unlinkSync(req.file.path);
     }
     next(error);
   }
 };
-
 
 // const createUsersFromExcel = async (req, res, next) => {
 //   try {
@@ -315,7 +325,6 @@ const createUsersFromExcel = async (req, res, next) => {
 //   }
 // };
 
-
 //logout user
 const logout = (_, res) => {
   res.clearCookie("usertoken", {
@@ -377,7 +386,6 @@ const deleteUserAccount = async (req, res, next) => {
 const editUserAccount = async (req, res, next) => {
   try {
     const { username, email, password } = req.body;
-    
 
     if (!username && !email && !password && !req.file) {
       throw new BadrequestError("Please enter a field to update...");
@@ -440,6 +448,58 @@ const getSingleUser = async (req, res, next) => {
   }
 };
 
+
+//fetch members details from the database
+const generateExcelWithMemberId = async (req, res, next) => {
+  try {
+    // Fetch all users from the database
+    const users = await User.find().select("_id username email");
+
+    // Map users to prepare rows for the Excel file
+    const userRows = users.map((user) => ({
+      member_id: user._id.toString(), // Add member_id explicitly
+      username: user.username,
+      email: user.email,
+      totaloanBalance: 0,
+      totalSavingsBalance: 0,
+      monthlySavingsDeduction: 0,
+      monthlyLoanDeduction: 0,
+      decemberPurchaseDeduction: 0,
+      septemberPurchaseDeduction: 0,
+    }));
+
+    // Create a new workbook and worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(userRows);
+
+    // Append the worksheet to the workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Users");
+
+    // Define the file path
+    const outputFilePath = path.join(
+      __dirname,
+      "..",
+      "upload",
+      "users_with_member_id.xlsx"
+    );
+
+    // Write the workbook to a file
+    XLSX.writeFile(workbook, outputFilePath);
+
+    // Send the file as a response
+    res.download(outputFilePath,  (err) => {
+      if (err) {
+        next(err);
+      } else {
+        // Delete the file after sending it to the client
+        fs.unlinkSync(outputFilePath);
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   logout,
   createUser,
@@ -454,5 +514,6 @@ module.exports = {
   deleteUserAccount,
   editUserAccount,
   getSingleUser,
-  createUsersFromExcel
+  createUsersFromExcel,
+  generateExcelWithMemberId,
 };
