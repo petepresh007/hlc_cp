@@ -22,7 +22,7 @@ app.use(
   cors({
     origin:
       process.env.NODE_ENV === "production"
-        ? "https://hlc-cp-client.vercel.app"
+        ? "https://portal.honeylandschools-cooperative-society.com.ng"
         : "http://localhost:5173",
     credentials: true,
   })

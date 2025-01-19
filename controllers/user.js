@@ -358,30 +358,64 @@ const getAllUser = async (req, res, next) => {
   }
 };
 
-//admin delete user account
+
+// //admin delete user account
+// const deleteUserAccount = async (req, res, next) => {
+//   try {
+//     const admin = await User.findById(req.admin._id);
+//     if (!admin) {
+//       throw new NotFoundError("No admin was found with the provided id");
+//     }
+
+//     const user = await User.findById(req.params.id);
+
+//     if (!user) {
+//       throw new NotFoundError("No user was found with the provided id");
+//     }
+
+//     const del = await User.findOneAndDelete({ _id: req.params.id });
+//     if (del) {
+//       const filepath = path.join(__dirname, "..", "upload", user.file);
+//       deleteFile(filepath);
+//     }
+//     res.status(200).json({ msg: "user deleted successfully..." });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
 const deleteUserAccount = async (req, res, next) => {
   try {
     const admin = await User.findById(req.admin._id);
     if (!admin) {
-      throw new NotFoundError("No admin was found with the provided id");
+      throw new NotFoundError("No admin was found with the provided ID");
     }
 
     const user = await User.findById(req.params.id);
-
     if (!user) {
-      throw new NotFoundError("No user was found with the provided id");
+      throw new NotFoundError("No user was found with the provided ID");
     }
 
-    const del = await User.findOneAndDelete({ _id: req.params.id });
-    if (del) {
-      const filepath = path.join(__dirname, "..", "upload", user.file);
+    // Delete all referenced finance documents
+    if (user.finance && user.finance.length > 0) {
+      await Finance.deleteMany({ _id: { $in: user.finance } });
+    }
+
+    // Delete the user's file if it exists
+    const filepath = user.file ? path.join(__dirname, "..", "upload", user.file) : null;
+    if (filepath && fs.existsSync(filepath)) {
       deleteFile(filepath);
     }
-    res.status(200).json({ msg: "user deleted successfully..." });
+
+    // Delete the user
+    await User.findByIdAndDelete(req.params.id);
+
+    res.status(200).json({ msg: "User and associated financial details deleted successfully." });
   } catch (error) {
     next(error);
   }
 };
+
 
 //admin modify users account
 const editUserAccount = async (req, res, next) => {
