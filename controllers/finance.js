@@ -31,9 +31,7 @@ const createFinance = async (req, res, next) => {
       throw new NotFoundError("No user was found with the provided id...");
     }
     const newFinance = new Finance({
-      totaloanBalance: Number(
-        totaloanBalance ? totaloanBalance : 0
-      ),
+      totaloanBalance: Number(totaloanBalance ? totaloanBalance : 0),
       totalSavingsBalance: Number(
         totalSavingsBalance ? totalSavingsBalance : 0
       ),
@@ -56,6 +54,7 @@ const createFinance = async (req, res, next) => {
         septemberPurchaseDeduction,
       member_id,
     });
+
     await newFinance.save();
     user.finance.push(newFinance._id);
     await user.save();
@@ -119,6 +118,9 @@ const editFinance = async (req, res, next) => {
           ? septemberPurchaseDeduction
           : finance.septemberPurchaseDeduction,
         totalDeduction:
+          (monthlySavingsDeduction
+            ? monthlySavingsDeduction
+            : finance.monthlySavingsDeduction) +
           (monthlyLoanDeduction
             ? monthlyLoanDeduction
             : finance.monthlyLoanDeduction) +
@@ -218,6 +220,7 @@ const createFinanceFromExcel = async (req, res, next) => {
 
       // Create Finance document
       const totalDeduction =
+        Number(monthlySavingsDeduction) +
         Number(monthlyLoanDeduction) +
         Number(decemberPurchaseDeduction) +
         Number(septemberPurchaseDeduction);

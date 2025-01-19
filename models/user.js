@@ -14,6 +14,9 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required:[true, 'please, enter your password']
     },
+    campus: {
+        type: String
+    },
     role: {
         type: String,
         required: true
@@ -24,5 +27,6 @@ const UserSchema = new mongoose.Schema({
         ref: 'Finance'
     }]
 }, {timestamps: true});
+
 
 module.exports = mongoose.model('User', UserSchema)

@@ -9,10 +9,10 @@ const { connectDB, closeDB } = require("./utils/db");
 const { NotFoundPage } = require("./utils/notFoundPage");
 const errorHandler = require("./middleware/errorhandler");
 const path = require("path");
-const { swaggerUi, swaggerSpec } = require('./swaggerConfig');
+const { swaggerUi, swaggerSpec } = require("./swaggerConfig");
 
 // Route for Swagger UI
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use(express.json());
 app.use(cookieParser());
@@ -20,17 +20,16 @@ app.use("/upload", express.static(path.join(__dirname, "upload")));
 app.use("/", express.static(path.join(__dirname, "public")));
 app.use(
   cors({
-    origin: [
-      "https://hlc-cp-client.vercel.app",
-      "http://localhost:5173",
-      "https://another-allowed-origin.com",
-    ],
+    origin:
+      process.env.NODE_ENV === "production"
+        ? "https://hlc-cp-client.vercel.app"
+        : "http://localhost:5173",
     credentials: true,
   })
 );
 
 app.use("/api/user", require("./routes/user"));
-app.use('/api/finance', require("./routes/finance"));
+app.use("/api/finance", require("./routes/finance"));
 
 app.get("/welcome", (req, res) => {
   res.status(200).json({ msg: "Welcome to the cooperative" });
@@ -59,10 +58,9 @@ app.get("/welcome", (req, res) => {
  *                     type: string
  *                     example: John Doe
  */
-app.get('/users', (req, res) => {
-  res.json([{ id: 1, name: 'John Doe' }]);
+app.get("/users", (req, res) => {
+  res.json([{ id: 1, name: "John Doe" }]);
 });
-
 
 let server;
 

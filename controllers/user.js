@@ -156,7 +156,7 @@ const createUser = async (req, res, next) => {
     if (!admin) {
       throw new NotFoundError("No admin was found with the provided id");
     }
-    const { username, email, password } = req.body;
+    const { username, email, password, campus } = req.body;
 
     if (!username || !password || !email) {
       throw new BadrequestError("All fields are required...");
@@ -180,6 +180,7 @@ const createUser = async (req, res, next) => {
       email,
       password: harshedPassword,
       role: "user",
+      campus,
       file,
     });
 
@@ -211,8 +212,8 @@ const createUsersFromExcel = async (req, res, next) => {
     const results = [];
 
     for (const user of users) {
-      const { username, email, password } = user;
-      console.log(username, email, password);
+      const { username, email, password, campus } = user;
+      console.log(username, email, password, campus);
 
       if (!username || !password || !email) {
         results.push({
@@ -246,6 +247,7 @@ const createUsersFromExcel = async (req, res, next) => {
         username,
         email,
         password: hashedPassword,
+        campus,
         role: "user",
       });
 
@@ -448,7 +450,6 @@ const getSingleUser = async (req, res, next) => {
   }
 };
 
-
 //fetch members details from the database
 const generateExcelWithMemberId = async (req, res, next) => {
   try {
@@ -487,7 +488,7 @@ const generateExcelWithMemberId = async (req, res, next) => {
     XLSX.writeFile(workbook, outputFilePath);
 
     // Send the file as a response
-    res.download(outputFilePath,  (err) => {
+    res.download(outputFilePath, (err) => {
       if (err) {
         next(err);
       } else {
@@ -499,6 +500,26 @@ const generateExcelWithMemberId = async (req, res, next) => {
     next(error);
   }
 };
+
+
+//get users by campus
+const getUsersByCampus = async (req, res, next) => {
+  try {
+    const admin = await User.findById(req.admin._id);
+    const campus = req.query.campus || 'ipaja'
+    if (!admin) {
+      throw new NotFoundError("no admin was found with the provided id");
+    }
+    const user = await User.find({ role: "user", campus: campus })
+      .sort({ createdAt: -1 })
+      .populate("Finance")
+      .select('-password')
+    res.status(200).json(user)
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 module.exports = {
   logout,
@@ -516,4 +537,5 @@ module.exports = {
   getSingleUser,
   createUsersFromExcel,
   generateExcelWithMemberId,
+  getUsersByCampus
 };
