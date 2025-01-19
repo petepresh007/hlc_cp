@@ -213,7 +213,6 @@ const createUsersFromExcel = async (req, res, next) => {
 
     for (const user of users) {
       const { username, email, password, campus } = user;
-      console.log(username, email, password, campus);
 
       if (!username || !password || !email) {
         results.push({
@@ -454,13 +453,14 @@ const getSingleUser = async (req, res, next) => {
 const generateExcelWithMemberId = async (req, res, next) => {
   try {
     // Fetch all users from the database
-    const users = await User.find().select("_id username email");
+    const users = await User.find().select("_id username email campus");
 
     // Map users to prepare rows for the Excel file
     const userRows = users.map((user) => ({
       member_id: user._id.toString(), // Add member_id explicitly
       username: user.username,
       email: user.email,
+      campus: user?.campus || "No campus",
       totaloanBalance: 0,
       totalSavingsBalance: 0,
       monthlySavingsDeduction: 0,
@@ -501,25 +501,78 @@ const generateExcelWithMemberId = async (req, res, next) => {
   }
 };
 
-
 //get users by campus
 const getUsersByCampus = async (req, res, next) => {
   try {
     const admin = await User.findById(req.admin._id);
-    const campus = req.query.campus || 'ipaja'
+    const campus = req.query.campus || "ipaja";
     if (!admin) {
       throw new NotFoundError("no admin was found with the provided id");
     }
     const user = await User.find({ role: "user", campus: campus })
       .sort({ createdAt: -1 })
       .populate("Finance")
-      .select('-password')
-    res.status(200).json(user)
+      .select("-password");
+    res.status(200).json(user);
   } catch (error) {
     next(error);
   }
 };
 
+//user edit user account
+const userEditAccount = async (req, res, next) => {
+  try {
+    const { username, password, email, campus } = req.body;
+
+    if (!username && !password && !email && !campus && !req.file) {
+      throw new BadrequestError("please enter a field to update...");
+    }
+
+    //check if user exists already
+    const existingUser = await User.findOne({ email });
+
+    const existingUserUsername = await User.findOne({ username });
+    if (existingUser || existingUserUsername) {
+      throw new ConflictError(
+        "A user with the email or username already exists..."
+      );
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      throw new NotFoundError("No user was found with the provided id");
+    }
+
+    let harshed;
+
+    if (password) {
+      harshed = await bcrypt.hash(password, 10); //ten salt rounds
+    }
+
+    const updateValue = await User.findByIdAndUpdate(
+      { _id: req.user._id },
+      {
+        username: username ? username : user.username,
+        email: email ? email : user.email,
+        file: req.file ? req.file.filename : user.file,
+        password: password ? harshed : user.password,
+      }
+    );
+    if (req.file) {
+      const filepath = path.join(__dirname, "..", "upload", user.file);
+      deleteFile(filepath);
+    }
+
+    res
+      .status(200)
+      .json({ updateValue, msg: "account updated successfully..." });
+  } catch (error) {
+    if (req.file) {
+      fs.unlinkSync(req.file.path);
+    }
+    next(error);
+  }
+};
 
 module.exports = {
   logout,
@@ -537,5 +590,6 @@ module.exports = {
   getSingleUser,
   createUsersFromExcel,
   generateExcelWithMemberId,
-  getUsersByCampus
+  getUsersByCampus,
+  userEditAccount
 };
