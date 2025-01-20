@@ -11,6 +11,7 @@ const { deleteFile } = require("../utils/deletefile");
 const path = require("path");
 const fs = require("fs");
 const XLSX = require("xlsx");
+const Finance = require('../models/finantial_details');
 
 // Register user
 const RegisterUser = async (req, res, next) => {
