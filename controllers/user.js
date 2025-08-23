@@ -11,7 +11,10 @@ const { deleteFile } = require("../utils/deletefile");
 const path = require("path");
 const fs = require("fs");
 const XLSX = require("xlsx");
-const Finance = require('../models/finantial_details');
+const Finance = require("../models/finantial_details");
+const CryptoJS = require("crypto-js");
+const { sendMail } = require("../middleware/sendEmail");
+const {frontend} = require("../frontend");
 
 // Register user
 const RegisterUser = async (req, res, next) => {
@@ -359,7 +362,6 @@ const getAllUser = async (req, res, next) => {
   }
 };
 
-
 // //admin delete user account
 // const deleteUserAccount = async (req, res, next) => {
 //   try {
@@ -403,7 +405,9 @@ const deleteUserAccount = async (req, res, next) => {
     }
 
     // Delete the user's file if it exists
-    const filepath = user.file ? path.join(__dirname, "..", "upload", user.file) : null;
+    const filepath = user.file
+      ? path.join(__dirname, "..", "upload", user.file)
+      : null;
     if (filepath && fs.existsSync(filepath)) {
       deleteFile(filepath);
     }
@@ -411,12 +415,15 @@ const deleteUserAccount = async (req, res, next) => {
     // Delete the user
     await User.findByIdAndDelete(req.params.id);
 
-    res.status(200).json({ msg: "User and associated financial details deleted successfully." });
+    res
+      .status(200)
+      .json({
+        msg: "User and associated financial details deleted successfully.",
+      });
   } catch (error) {
     next(error);
   }
 };
-
 
 //admin modify users account
 const editUserAccount = async (req, res, next) => {
@@ -609,6 +616,84 @@ const userEditAccount = async (req, res, next) => {
   }
 };
 
+//forget password
+const forgotPassword = async (req, res, next) => {
+  const { email } = req.body;
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) throw new BadrequestError("Please enter a valid email");
+
+    const rawToken = CryptoJS.AES.encrypt(
+      user.email,
+      process.env.CRYPTO_SECRET
+    ).toString();
+
+    const resetToken = rawToken
+      .replace(/\+/g, "-") // Replace '+' with '-'
+      .replace(/\//g, "_") // Replace '/' with '_'
+      .replace(/=+$/, ""); // Remove trailing '='
+
+    const resetUrl = `${frontend}/reset-password/${encodeURIComponent(
+      resetToken
+    )}`;
+
+    console.log(resetUrl, resetToken);
+
+    // Send reset email
+    const sent_from = process.env.SMTP_MAIL;
+    const send_to = email;
+    const subject = "Password Reset";
+    const message = `<p>Click <a href="${resetUrl}">here</a> to reset your password.</p>`;
+    await sendMail(sent_from, send_to, subject, message);
+
+    res.json({ message: "Reset link sent!" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+//reset password
+const resetPassword = async (req, res, next) => {
+  const { token } = req.params;
+  const { password, confirmPassword } = req.body;
+
+  if (!token || !password || !confirmPassword) {
+    throw new BadrequestError("Please provide all required fields");
+  }
+
+  if (password !== confirmPassword) {
+    throw new BadrequestError("Passwords do not match");
+  }
+
+  try {
+    //const bytes = CryptoJS.AES.decrypt(token, process.env.CRYPTO_SECRET);
+
+    //Restore original Base64 format
+    const base64 = token
+      .replace(/-/g, "+") // '-' → '+'
+      .replace(/_/g, "/") // '_' → '/'
+      .padEnd(token.length + ((4 - (token.length % 4)) % 4), "="); // Restore '=' padding
+
+    //Decrypt the token
+    const bytes = CryptoJS.AES.decrypt(base64, process.env.CRYPTO_SECRET);
+
+    const email = bytes.toString(CryptoJS.enc.Utf8);
+    const user = await User.findOne({ email });
+
+    if (!user) throw new NotFoundError("User not found");
+
+    const harshedPassword = await bcrypt.hash(password, 10); //10 salt rounds
+
+    user.password = harshedPassword;
+    await user.save();
+
+    res.json({ message: "Password reset successful" });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   logout,
   createUser,
@@ -626,5 +711,7 @@ module.exports = {
   createUsersFromExcel,
   generateExcelWithMemberId,
   getUsersByCampus,
-  userEditAccount
+  userEditAccount,
+  forgotPassword,
+  resetPassword,
 };

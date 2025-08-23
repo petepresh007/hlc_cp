@@ -9,7 +9,7 @@ module.exports = {
                 // useNewUrlParser: true,
                 // useUnifiedTopology: true,
             });
-            console.log('Database connected successfully');
+            console.log(`MongoDB Connected: ${conn.connection.host}`);
             return conn;
         } catch (error) {
             console.error('Database connection error:', error);

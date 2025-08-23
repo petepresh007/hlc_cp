@@ -15,7 +15,9 @@ const {
   createUsersFromExcel,
   generateExcelWithMemberId,
   getUsersByCampus,
-  userEditAccount
+  userEditAccount,
+  forgotPassword,
+  resetPassword
 } = require("../controllers/user");
 const { userProtect, adminProtect } = require("../middleware/auth");
 const { upload } = require("../multer");
@@ -38,7 +40,10 @@ router.put("/edit/:id", upload.single("file"), adminProtect, editUserAccount);
 router.get('/get-user-details', generateExcelWithMemberId);
 
 router.get('/campus', adminProtect, getUsersByCampus);
-router.put('/user-edit', userProtect, upload.single('file'), userEditAccount)
+router.put('/user-edit', userProtect, upload.single('file'), userEditAccount);
+
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password/:token', resetPassword);
 
 
 module.exports = router;
