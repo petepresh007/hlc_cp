@@ -268,67 +268,6 @@ const createUsersFromExcel = async (req, res, next) => {
   }
 };
 
-// const createUsersFromExcel = async (req, res, next) => {
-//   try {
-//     const admin = await User.findById(req.admin._id);
-//     if (!admin) {
-//       throw new NotFoundError("No admin was found with the provided id");
-//     }
-
-//     if (!req.file) {
-//       throw new BadrequestError("Please upload an Excel file...");
-//     }
-
-//     const workbook = XLSX.readFile(req.file.path);
-//     const sheet = workbook.Sheets[workbook.SheetNames[0]];
-//     const users = XLSX.utils.sheet_to_json(sheet).filter(
-//       (user) => user.username && user.email && user.password
-//     );
-
-//     const results = [];
-
-//     for (const user of users) {
-//       const { username, email, password } = {
-//         username: user.username?.trim(),
-//         email: user.email?.trim(),
-//         password: user.password?.trim(),
-//       };
-
-//       console.log(username, email, password)
-
-//       if (!username || !password || !email) {
-//         results.push({ username, email, status: "failed", reason: "Missing fields" });
-//         continue;
-//       }
-
-//       const existingUser = await User.findOne({ $or: [{ email }, { username }] });
-//       if (existingUser) {
-//         results.push({ username, email, status: "failed", reason: "User already exists" });
-//         continue;
-//       }
-
-//       const hashedPassword = await bcrypt.hash(password, 10);
-
-//       const newUser = new User({
-//         username,
-//         email,
-//         password: hashedPassword,
-//         role: "user",
-//       });
-
-//       await newUser.save();
-//       results.push({ username, email, status: "success" });
-//     }
-
-//     res.status(200).json({ msg: "Bulk user creation completed", results });
-//     fs.unlinkSync(req.file.path);
-//   } catch (error) {
-//     if (req.file) {
-//       fs.unlinkSync(req.file.path);
-//     }
-//     next(error);
-//   }
-// };
 
 //logout user
 const logout = (_, res) => {
@@ -362,30 +301,6 @@ const getAllUser = async (req, res, next) => {
   }
 };
 
-// //admin delete user account
-// const deleteUserAccount = async (req, res, next) => {
-//   try {
-//     const admin = await User.findById(req.admin._id);
-//     if (!admin) {
-//       throw new NotFoundError("No admin was found with the provided id");
-//     }
-
-//     const user = await User.findById(req.params.id);
-
-//     if (!user) {
-//       throw new NotFoundError("No user was found with the provided id");
-//     }
-
-//     const del = await User.findOneAndDelete({ _id: req.params.id });
-//     if (del) {
-//       const filepath = path.join(__dirname, "..", "upload", user.file);
-//       deleteFile(filepath);
-//     }
-//     res.status(200).json({ msg: "user deleted successfully..." });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
 
 const deleteUserAccount = async (req, res, next) => {
   try {
